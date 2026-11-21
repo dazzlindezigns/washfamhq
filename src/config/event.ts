@@ -63,18 +63,6 @@ export const eventConfig = {
   } as Record<DishCategoryId, number | null>,
 
   /**
-   * Scripture shown above the footer. Pick one (or set to null to hide it).
-   * Options:
-   *  - Psalm 133:1 (KJV): "Behold, how good and how pleasant it is for brethren to dwell together in unity!"
-   *  - Luke 2:10–11 (KJV): "Fear not: for, behold, I bring you good tidings of great joy, which shall be to all
-   *    people. For unto you is born this day in the city of David a Saviour, which is Christ the Lord."
-   */
-  verse: {
-    text: "Behold, how good and how pleasant it is for brethren to dwell together in unity!",
-    reference: "Psalm 133:1 (KJV)",
-  } as { text: string; reference: string } | null,
-
-  /**
    * Nav + section names. Rename sections here without touching components.
    * The RSVP section is called "Count Me In!" so it doesn't feel like a twin of "Who All Over There?".
    */

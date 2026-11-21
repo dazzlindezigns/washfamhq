@@ -61,7 +61,7 @@ Local dev: `npm install`, then `npm run dev`, then open http://localhost:3000.
 
 There are two layers:
 
-1. **`src/config/event.ts`** holds the defaults: title, date, time, location, attire, dish rule, tone line, dish categories + suggested max, nav/section names, game checklist, and the Scripture verse.
+1. **`src/config/event.ts`** holds the defaults: title, date, time, location, attire, dish rule, tone line, dish categories + suggested max, nav/section names, and game checklist.
 2. **The `xmas_settings` table** overrides the config. Any non-empty column wins.
 
 The fast way is **`/admin` → Event settings**: set the time, the exact start (drives the countdown), the location line, the address (shows publicly with a Google Maps link), and the per-category limits. Changes show up on the next page load.
@@ -70,7 +70,6 @@ The fast way is **`/admin` → Event settings**: set the time, the exact start (
 - Empty address shows "At a VRBO. Location to be announced".
 - Dish limits are **soft**: at the limit, the tile says "Covered!" and nudges people to emptier categories, but nobody is blocked.
 - To rename "Count Me In" (or any nav label), edit `nav` / `rsvpSectionTitle` in `src/config/event.ts`.
-- To pick or hide the verse, edit `verse` in `src/config/event.ts` (set it to `null` to hide).
 - **Logo:** save the WashFam HQ logo as `public/images/washfam-hq-logo.png` and it replaces the text wordmark in the nav and footer automatically.
 
 ## 5. Admin (`/admin`)

@@ -130,20 +130,11 @@ export function Faq() {
 }
 
 export function Footer() {
-  const verse = eventConfig.verse;
   const phone = hostPhone();
   return (
     <footer className="bg-fireplace border-t-2 border-gold/50 text-cream">
       <div className="mx-auto max-w-4xl px-4 py-14 text-center">
-        {verse ? (
-          <figure className="mx-auto max-w-2xl">
-            <blockquote className="font-script text-3xl leading-snug text-gold-light sm:text-4xl">
-              &ldquo;{verse.text}&rdquo;
-            </blockquote>
-            <figcaption className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-cream">{verse.reference}</figcaption>
-          </figure>
-        ) : null}
-        <p className={`${verse ? "mt-10" : ""} font-script text-6xl text-white script-glow sm:text-7xl`}>Merry Christmas!</p>
+        <p className="font-script text-6xl text-white script-glow sm:text-7xl">Merry Christmas!</p>
         <p className="mt-4 text-lg">
           Hosted with love by {eventConfig.hostFamily}.{" "}
           {phone ? (
