@@ -14,6 +14,7 @@ import {
 import { FIELD_STEP, fieldErrorsFrom, rsvpSchema, type FieldName } from "@/lib/schema";
 import { dishTiles, openCategories } from "@/lib/summary";
 import type { RsvpStatus } from "@/lib/types";
+import { useHydrated } from "@/lib/use-hydrated";
 import { Confetti } from "./Confetti";
 
 type FormState = {
@@ -69,6 +70,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
+  const hydrated = useHydrated();
   const [lastSaved, setLastSaved] = useState<{ status: RsvpStatus; edited: boolean } | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -112,6 +114,9 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
           setFormError("Hmm, I can't find that RSVP anymore. Go ahead and fill it out fresh.");
           setMode("create");
           setEditTarget(null);
+          setForm(EMPTY);
+          setPhase("form");
+          goTo(0);
           return;
         }
         if (!res.ok) throw new Error();
@@ -136,6 +141,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
         setPhase("form");
         goTo(0);
       } catch {
+        setPhase("form");
         setFormError("Couldn't pull up your RSVP right now. Check your signal and try again.");
       } finally {
         setLoadingEdit(false);
@@ -271,7 +277,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
   const err = (k: FieldName) => errors[k];
   const describedBy = (k: FieldName, hint?: boolean) =>
     [hint ? `${uid}-${k}-hint` : null, err(k) ? `${uid}-${k}-err` : null].filter(Boolean).join(" ") || undefined;
-  const ErrorText = ({ k }: { k: FieldName }) =>
+  const errorText = (k: FieldName) =>
     err(k) ? (
       <p id={`${uid}-${k}-err`} className="mt-1.5 text-sm font-semibold text-plaid">
         {err(k)}
@@ -393,7 +399,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             <p id={`${uid}-familyName-hint`} className="mt-1 text-sm text-ink-soft">
               This is what shows on your card in &ldquo;Who All Over There?&rdquo;
             </p>
-            <ErrorText k="familyName" />
+            {errorText("familyName")}
           </div>
 
           <div>
@@ -412,7 +418,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
               aria-describedby={describedBy("contactName")}
               required
             />
-            <ErrorText k="contactName" />
+            {errorText("contactName")}
           </div>
 
           <fieldset>
@@ -446,7 +452,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
                 </label>
               ))}
             </div>
-            <ErrorText k="status" />
+            {errorText("status")}
           </fieldset>
 
           {form.status !== "cant" ? (
@@ -474,7 +480,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
               <p id={`${uid}-kidsAges-hint`} className="mt-1 text-sm text-ink-soft">
                 Helps us plan games and snacks for the little (and not so little) ones.
               </p>
-              <ErrorText k="kidsAges" />
+              {errorText("kidsAges")}
             </div>
           ) : null}
         </div>
@@ -509,7 +515,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
                 );
               })}
             </div>
-            <ErrorText k="dishCategory" />
+            {errorText("dishCategory")}
             {coveredPick ? (
               <p className="mt-2 rounded-xl bg-pine/10 px-3 py-2 text-sm text-pine-deep" role="status">
                 Heads up: we&rsquo;re covered on {coveredPick.plural}.{" "}
@@ -533,7 +539,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
               aria-invalid={!!err("dish")}
               aria-describedby={describedBy("dish")}
             />
-            <ErrorText k="dish" />
+            {errorText("dish")}
           </div>
 
           <div>
@@ -550,7 +556,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
               aria-invalid={!!err("game")}
               aria-describedby={describedBy("game")}
             />
-            <ErrorText k="game" />
+            {errorText("game")}
           </div>
         </div>
 
@@ -574,7 +580,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             <p id={`${uid}-contact-hint`} className="mt-1 text-sm text-ink-soft">
               Only {hostName} sees this. It never shows on the site.
             </p>
-            <ErrorText k="contact" />
+            {errorText("contact")}
           </div>
 
           <div>
@@ -595,7 +601,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             <p id={`${uid}-note-hint`} className="mt-1 text-sm text-ink-soft">
               Private. Just between you and {hostName}.
             </p>
-            <ErrorText k="note" />
+            {errorText("note")}
           </div>
 
           {/* Honeypot: hidden from people and screen readers */}
@@ -614,7 +620,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
           ) : (
             <span />
           )}
-          <button type="submit" className="btn btn-red sm:min-w-56" disabled={submitting}>
+          <button type="submit" className="btn btn-red sm:min-w-56" disabled={submitting || !hydrated}>
             {submitting ? "Saving…" : isLastStep ? submitLabel : "Next"}
           </button>
         </div>

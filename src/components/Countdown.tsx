@@ -24,9 +24,13 @@ export function Countdown({ target, serverNow }: { target: string; serverNow: nu
   const [now, setNow] = useState(serverNow);
 
   useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
+    const tick = () => setNow(Date.now());
+    const first = setTimeout(tick, 0);
+    const t = setInterval(tick, 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
   }, []);
 
   const p = parts(targetMs, now);

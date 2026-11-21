@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { DISH_CATEGORIES } from "@/config/event";
 import type { RsvpRecord } from "@/lib/types";
 import { deleteRsvp, login, saveRsvp, saveSettings, type ActionState } from "./actions";
@@ -52,9 +53,10 @@ function toLocalInput(iso: string | null) {
 
 export function SettingsForm(p: SettingsProps) {
   const [state, action, pending] = useActionState(saveSettings, null);
-  const [startsLocal, setStartsLocal] = useState("");
-  // Convert to the admin's local time after mount (avoids server/client time zone mismatch).
-  useEffect(() => setStartsLocal(toLocalInput(p.startsAt)), [p.startsAt]);
+  // Shown in the admin's local time, computed only on the client (avoids server/client time zone mismatch).
+  const hydrated = useHydrated();
+  const [edited, setStartsLocal] = useState<string | null>(null);
+  const startsLocal = edited ?? (hydrated ? toLocalInput(p.startsAt) : "");
   const iso = startsLocal ? new Date(startsLocal).toISOString() : "";
 
   return (

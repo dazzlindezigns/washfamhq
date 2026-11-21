@@ -31,7 +31,7 @@ export function Brand({ size = "nav" }: { size?: "nav" | "footer" }) {
     );
   }
   return (
-    <span className="inline-flex items-baseline gap-1 leading-none" aria-label="The WashFam HQ">
+    <span role="img" className="inline-flex items-baseline gap-1 leading-none" aria-label="WashFam HQ">
       <span aria-hidden="true" className={`font-script text-white ${big ? "text-4xl" : "text-2xl"} drop-shadow-[0_2px_0_rgba(0,0,0,0.6)]`}>
         WashFam
       </span>

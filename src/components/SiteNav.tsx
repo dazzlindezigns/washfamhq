@@ -47,8 +47,9 @@ export function SiteNav({ brand }: { brand: React.ReactNode }) {
         Skip to the good stuff
       </a>
       <nav aria-label="Main" className="mx-auto flex h-[var(--nav-h)] max-w-6xl items-center justify-between gap-3 px-4">
-        <a href="#home" className="shrink-0 rounded-lg" aria-label="WashFam HQ, back to top">
+        <a href="#home" className="shrink-0 rounded-lg">
           {brand}
+          <span className="sr-only"> (back to top)</span>
         </a>
 
         <ul className="hidden items-center gap-1 lg:flex">

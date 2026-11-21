@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { DISH_CATEGORIES } from "@/config/event";
@@ -101,9 +102,9 @@ async function Dashboard() {
         <header className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-script text-5xl text-wine">Host HQ</h1>
           <div className="flex flex-wrap gap-2">
-            <a href="/" className="btn btn-ghost-ink !min-h-11 !text-base">
+            <Link href="/" className="btn btn-ghost-ink !min-h-11 !text-base">
               View site
-            </a>
+            </Link>
             <a href="/admin/export" className="btn btn-red !min-h-11 !text-base">
               Export CSV
             </a>
