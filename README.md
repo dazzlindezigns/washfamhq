@@ -27,11 +27,12 @@ No secrets are committed. `.env*` is git-ignored except `.env.example`.
 
 > Env vars are read at build time for some static parts (host phone, logo). After you change one on Vercel, **redeploy**.
 
-## 2. Database (run the migration once)
+## 2. Database (run the migrations in order)
 
-File: `supabase/migrations/20261121000000_xmas_game_night.sql`
+1. `supabase/migrations/20261121000000_xmas_game_night.sql`: tables, view, RLS, host card
+2. `supabase/migrations/20261122000000_xmas_menu_and_game_ideas.sql`: finger-food categories (Meats, Sides, Chips & Dip, Desserts, Drinks), prize-gift rule, drops the plaid note, and the Game Ideas board
 
-Open Supabase → **SQL Editor** → paste the whole file → **Run**. It's idempotent, so running it again is safe. It only creates `xmas_`-prefixed objects and never touches your other apps' tables.
+Open Supabase → **SQL Editor** → paste each file → **Run**. Both are idempotent, so running them again is safe. They only touch `xmas_`-prefixed objects and never your other apps' tables. Migration 2 moves any old dish claims onto the new categories (Entrée → Meats; Side/Salad/Fruit → Sides; Dessert → Desserts).
 
 What it creates:
 
@@ -40,6 +41,8 @@ What it creates:
 | `xmas_rsvps` | All RSVP data, including phone/email, notes, and the edit token. RLS is on, and anon/authenticated have **no** access |
 | `xmas_public_rsvps` (view) | The only thing the public site reads: id, family name, status, guest count, dish, game. No contact info |
 | `xmas_settings` | One row (`id = 1`) of event settings. Public read-only |
+| `xmas_game_ideas` | Game ideas: name, how to play, video links, who shared it, edit token. Locked like RSVPs |
+| `xmas_public_game_ideas` (view) | Public read of game ideas, minus the edit token |
 | `xmas_rate_limits` + `xmas_rate_limit_hit()` | Rate limiting for the API routes. Service role only |
 | `xmas_touch_updated_at()` | `updated_at` trigger |
 | `xmas_settings_public_read` | RLS policy: anyone can read settings |
@@ -79,6 +82,7 @@ Go to `/admin` and enter `ADMIN_PASSCODE`. That sets a signed, httpOnly cookie f
 From there you can:
 - See totals: families coming / maybe / can't, people, adults, kids, per-dish-category counts vs. limits
 - See every RSVP with phone/email and notes; edit or delete any of them
+- See and delete game ideas
 - Add a family manually (for the phone-call RSVPs)
 - Edit event settings
 - **Export CSV** (opens fine in Excel and Google Sheets)
@@ -87,6 +91,7 @@ From there you can:
 
 - Browsers never talk to Supabase directly. Public pages are rendered on the server with the **anon key**, which can only read `xmas_public_rsvps` + `xmas_settings`.
 - RSVP create/edit goes through `/api/rsvp` (zod validation, honeypot field, DB-backed rate limit), which writes with the service-role key.
+- Game ideas work the same way: anyone can add ideas with links, and only the device that added one (or `/admin`) can edit or remove it.
 - Editing: each RSVP gets a random edit token stored in the guest's browser (localStorage), which unlocks "Update my RSVP" on that device. Without the token, nobody can read or change it.
 - Phone, email, notes, and the contact name are only visible in `/admin` and the CSV.
 - The site is set to `noindex`, so it won't show up in search results.

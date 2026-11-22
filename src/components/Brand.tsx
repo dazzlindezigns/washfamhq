@@ -22,10 +22,11 @@ export function Brand({ size = "nav" }: { size?: "nav" | "footer" }) {
     return (
       <Image
         src={`/images/${LOGO_FILE}`}
-        alt="The WashFam HQ: the Washingtons' Family Headquarters"
-        width={big ? 240 : 108}
-        height={big ? 160 : 72}
-        className={big ? "h-auto w-[200px] sm:w-[240px]" : "h-11 w-auto"}
+        alt="The WashFam HQ"
+        width={big ? 768 : 168}
+        height={big ? 512 : 112}
+        sizes={big ? "(min-width: 640px) 340px, 260px" : "84px"}
+        className={`mix-blend-lighten ${big ? "h-auto w-[260px] sm:w-[340px]" : "h-14 w-auto"}`}
         priority={!big}
       />
     );
