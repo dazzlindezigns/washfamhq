@@ -114,3 +114,72 @@ export function toDbRow(d: RsvpParsed) {
     note: d.note ?? null,
   };
 }
+
+/* ---------------- Game ideas ---------------- */
+
+export const MAX_GAME_LINKS = 8;
+
+function normalizeUrl(raw: string) {
+  const s = raw.trim();
+  if (!s) return s;
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+}
+
+export function isHttpUrl(v: string) {
+  try {
+    const u = new URL(v);
+    return (u.protocol === "https:" || u.protocol === "http:") && u.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
+
+const linkSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .max(500, "That link is too long. Try the share link from YouTube or TikTok instead.")
+    .transform(normalizeUrl)
+    .refine((v) => isHttpUrl(v), "That link doesn't look right. Paste the whole thing (like https://youtube.com/...)."),
+  label: z.preprocess(blankToUndefined, z.string().trim().max(60, "Keep the link name under 60 characters.").optional()),
+});
+
+export const gameIdeaSchema = z.object({
+  title: z
+    .string({ error: "What's the game called?" })
+    .trim()
+    .min(1, "What's the game called?")
+    .max(80, "Keep the game name under 80 characters."),
+  howToPlay: z
+    .string({ error: "Tell us how to play. Short and sweet is fine." })
+    .trim()
+    .min(1, "Tell us how to play. Short and sweet is fine.")
+    .max(2000, "Love the detail, but keep it under 2,000 characters."),
+  links: z
+    .array(linkSchema)
+    .max(MAX_GAME_LINKS, `That's plenty! ${MAX_GAME_LINKS} links max.`)
+    .default([]),
+  sharedBy: z.preprocess(blankToUndefined, z.string().trim().max(80, "Keep your name under 80 characters.").optional()),
+  website: z.string().optional(),
+});
+
+export type GameIdeaInput = z.input<typeof gameIdeaSchema>;
+
+/** Drop rows where the person left the link box empty, before validating. */
+export function cleanIdeaInput(body: unknown) {
+  if (!body || typeof body !== "object") return body;
+  const b = body as Record<string, unknown>;
+  const links = Array.isArray(b.links)
+    ? b.links.filter((l) => l && typeof l === "object" && typeof (l as { url?: unknown }).url === "string" && (l as { url: string }).url.trim())
+    : [];
+  return { ...b, links };
+}
+
+export function ideaErrorsFrom(error: z.ZodError) {
+  const out: Record<string, string> = {};
+  for (const issue of error.issues) {
+    const key = issue.path.join(".");
+    if (key && !out[key]) out[key] = issue.message;
+  }
+  return out;
+}

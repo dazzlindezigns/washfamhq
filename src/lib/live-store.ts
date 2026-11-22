@@ -134,3 +134,64 @@ function subscribeMy(cb: () => void) {
 export function useMyRsvp(): MyRsvp | null {
   return useSyncExternalStore(subscribeMy, getMySnapshot, () => null);
 }
+
+/* ---------- "My game ideas" (this device) ---------- */
+
+export type MyIdea = { id: string; token: string };
+const IDEAS_KEY = "xmas-my-ideas";
+const IDEAS_EVENT = "xmas:my-ideas";
+let ideasCache: { raw: string | null; value: MyIdea[] } = { raw: null, value: [] };
+const EMPTY_IDEAS: MyIdea[] = [];
+
+function readIdeasRaw() {
+  try {
+    return window.localStorage.getItem(IDEAS_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getIdeasSnapshot(): MyIdea[] {
+  const raw = readIdeasRaw();
+  if (raw !== ideasCache.raw) {
+    let value: MyIdea[] = [];
+    try {
+      const v = raw ? JSON.parse(raw) : [];
+      value = Array.isArray(v) ? v.filter((x) => x && typeof x.id === "string" && typeof x.token === "string") : [];
+    } catch {
+      value = [];
+    }
+    ideasCache = { raw, value };
+  }
+  return ideasCache.value;
+}
+
+function writeIdeas(list: MyIdea[]) {
+  try {
+    window.localStorage.setItem(IDEAS_KEY, JSON.stringify(list));
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(IDEAS_EVENT));
+}
+
+export function rememberMyIdea(idea: MyIdea) {
+  writeIdeas([...getIdeasSnapshot().filter((i) => i.id !== idea.id), idea]);
+}
+
+export function forgetMyIdea(id: string) {
+  writeIdeas(getIdeasSnapshot().filter((i) => i.id !== id));
+}
+
+function subscribeIdeas(cb: () => void) {
+  window.addEventListener(IDEAS_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(IDEAS_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+export function useMyIdeas(): MyIdea[] {
+  return useSyncExternalStore(subscribeIdeas, getIdeasSnapshot, () => EMPTY_IDEAS);
+}

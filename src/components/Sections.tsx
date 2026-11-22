@@ -4,7 +4,7 @@ import { eventConfig } from "@/config/event";
 import { getPublicData } from "@/lib/data";
 import { SectionTitle } from "./SectionTitle";
 import { DishTiles, DishTilesSkeleton } from "./live/DishTiles";
-import { GamesList, GamesListSkeleton } from "./live/GamesList";
+import { GameIdeas, GameIdeasSkeleton } from "./live/GameIdeas";
 import { GuestCarousel, GuestCarouselSkeleton } from "./live/GuestCarousel";
 import { ClaimDishButton } from "./ClaimDishButton";
 
@@ -14,8 +14,8 @@ async function LiveDishTiles() {
 async function LiveGuestCarousel() {
   return <GuestCarousel initial={await getPublicData()} />;
 }
-async function LiveGamesList() {
-  return <GamesList initial={await getPublicData()} />;
+async function LiveGameIdeas() {
+  return <GameIdeas initial={await getPublicData()} />;
 }
 
 export function DishSignup() {
@@ -25,7 +25,12 @@ export function DishSignup() {
         <SectionTitle
           id="dishes-title"
           tone="light"
-          kicker="Help us build an amazing spread! Claim your dish so we don't end up with nine desserts and no entrée. (Although… no. We need the entrée.)"
+          kicker={
+            <>
+              It&rsquo;s a <strong>finger-food</strong> kind of night. Claim your category so we get a real spread, not nine
+              desserts and zero meats. {eventConfig.paperGoods}
+            </>
+          }
         >
           Dish Signup
         </SectionTitle>
@@ -103,11 +108,16 @@ export function Games() {
           />
         </div>
 
-        <div className="mx-auto mt-12 max-w-3xl">
-          <h3 className="text-center font-display text-2xl uppercase tracking-wide text-white sm:text-3xl">Games folks are bringing</h3>
-          <p className="mb-5 mt-1 text-center text-cream">Bringing a game? Add it in your RSVP and it shows up here.</p>
-          <Suspense fallback={<GamesListSkeleton />}>
-            <LiveGamesList />
+        <div className="mx-auto mt-12 max-w-5xl">
+          <h3 id="game-ideas-title" className="text-center font-display text-3xl uppercase tracking-wide text-white sm:text-4xl">
+            Game Ideas
+          </h3>
+          <p className="mx-auto mb-6 mt-2 max-w-2xl text-center text-cream">
+            Got a game we HAVE to play? Put it on the board with how to play it and any videos that show it. Add as many
+            ideas (and links) as you want. And don&rsquo;t forget: every family brings one small gift for the prize table.
+          </p>
+          <Suspense fallback={<GameIdeasSkeleton />}>
+            <LiveGameIdeas />
           </Suspense>
         </div>
       </div>
