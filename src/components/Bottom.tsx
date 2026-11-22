@@ -51,7 +51,7 @@ export function Faq() {
       a: (
         <>
           Christmas pajamas. They&rsquo;re <strong>required</strong>, not suggested. Get cozy, get festive, and come ready
-          to play. No PJs? Liiisten&hellip; don&rsquo;t test me.
+          to play. No PJs? Don&rsquo;t test me.
         </>
       ),
     },

@@ -12,7 +12,7 @@ export function Intro() {
         </h2>
         <div className="mt-8 space-y-4 text-lg leading-relaxed text-ink">
           <p>
-            <strong className="font-semibold">Liiisten. You&rsquo;re invited.</strong> The Washingtons are taking over a VRBO on
+            <strong className="font-semibold">You&rsquo;re invited!</strong> The Washingtons are taking over a VRBO on
             Christmas Eve, and we want ALL of y&rsquo;all there: in your coziest Christmas PJs, with a dish in one hand and
             your game face on.
           </p>

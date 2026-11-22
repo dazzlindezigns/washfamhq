@@ -132,7 +132,7 @@ values (
   'Christmas pajamas (required)',
   'Plaid matching encouraged',
   'Every family brings a dish',
-  'fun, festive, and faith-filled',
+  'fun and festive',
   '{"entree": 4, "side": 6, "salad": 3, "dessert": 4, "fruit": 2, "drinks": 3}'::jsonb
 )
 on conflict (id) do nothing;

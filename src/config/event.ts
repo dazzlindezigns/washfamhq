@@ -51,7 +51,7 @@ export const eventConfig = {
   /** What the hosts are covering. */
   paperGoods:
     "The Washingtons have the plates, cups, napkins, forks, and spoons covered. Bring your dish in something disposable or easy to clean, plus whatever serving utensils it needs (tongs, serving spoon, etc.), so nobody's stuck washing dishes on Christmas Eve.",
-  toneLine: "fun, festive, and faith-filled",
+  toneLine: "fun and festive",
 
   /**
    * Suggested max per dish category. It's a soft limit: when it's reached the tile
