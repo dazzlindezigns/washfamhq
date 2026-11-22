@@ -64,8 +64,9 @@ export function Faq() {
           <a href="#dishes" className="font-semibold text-wine underline underline-offset-4">
             Dish Signup
           </a>{" "}
-          and claim your category (Meats, Sides, Chips &amp; Dip, Desserts, or Drinks). We&rsquo;ve got the paper goods
-          covered (plates, cups, and napkins), so bring your dish in something disposable or easy to clean. Got a game
+          and claim your category (Meats, Sides, Chips &amp; Dip, Desserts, or Drinks). We&rsquo;ve got the plates, cups,
+          napkins, forks, and spoons. You bring your dish in something disposable or easy to clean,{" "}
+          <strong>plus the serving utensils for it</strong> (tongs, serving spoon, whatever it needs). Got a game
           we should play? Put it on the{" "}
           <a href="#games" className="font-semibold text-wine underline underline-offset-4">
             Game Ideas

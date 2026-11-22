@@ -45,12 +45,12 @@ export const eventConfig = {
   attire: "Christmas pajamas (required)",
   /** Optional extra line under attire. null = nothing shown. */
   attireNote: null as string | null,
-  dishRule: "Every family brings a finger-food dish",
+  dishRule: "Every family brings a finger-food dish (plus serving utensils for it)",
   /** Shown with the dish rule. */
   giftRule: "Plus one small gift for game prizes",
   /** What the hosts are covering. */
   paperGoods:
-    "The Washingtons have the paper goods covered (plates, cups, and napkins). Bring your dish in something disposable or easy to clean, so nobody's stuck washing dishes on Christmas Eve.",
+    "The Washingtons have the plates, cups, napkins, forks, and spoons covered. Bring your dish in something disposable or easy to clean, plus whatever serving utensils it needs (tongs, serving spoon, etc.), so nobody's stuck washing dishes on Christmas Eve.",
   toneLine: "fun, festive, and faith-filled",
 
   /**

@@ -87,7 +87,7 @@ function DetailsCard({ s, live }: { s: ResolvedSettings; live: boolean }) {
         <Column icon={Icon.bring} label="Bring">
           <p className="font-semibold">{s.dishRule}</p>
           <p className="text-gold-light">{s.giftRule}</p>
-          <p className="mt-1 text-sm">Paper goods are on us.</p>
+          <p className="mt-1 text-sm">Plates, cups, napkins, forks &amp; spoons are on us.</p>
           <a href="#dishes" className="mt-2 inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-gold-light underline underline-offset-4 hover:text-white">
             Claim yours &rarr;
           </a>
