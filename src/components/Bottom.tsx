@@ -85,6 +85,16 @@ export function Faq() {
       ),
     },
     {
+      q: "Can I invite someone?",
+      a: (
+        <>
+          This one&rsquo;s <strong>by invitation only</strong>, so please don&rsquo;t share the link or the flyer. If
+          there&rsquo;s someone you&rsquo;d like to attend, talk to the Washingtons and they&rsquo;ll send the invite to them
+          directly.
+        </>
+      ),
+    },
+    {
       q: "When do I get the address?",
       a: (
         <>

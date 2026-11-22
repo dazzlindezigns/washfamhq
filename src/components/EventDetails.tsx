@@ -93,6 +93,10 @@ function DetailsCard({ s, live }: { s: ResolvedSettings; live: boolean }) {
           </a>
         </Column>
       </div>
+      <p className="mx-auto mt-6 max-w-xl rounded-2xl border-2 border-gold/60 bg-black/30 px-5 py-3 text-center text-cream">
+        <strong className="text-gold-light">This one&rsquo;s by invitation only,</strong> so please don&rsquo;t share the link.
+        Want someone else there? Talk to the Washingtons and they&rsquo;ll send the invite directly.
+      </p>
       <div className="mt-6 flex flex-col items-center justify-center gap-3 text-center text-cream sm:flex-row">
         <a href="/images/flyer.jpg" download="Washingtons-Christmas-Eve-Game-Night-flyer.jpg" className="btn btn-ghost">
           Save the flyer
@@ -116,7 +120,7 @@ export function EventDetails({ fallbackSettings }: { fallbackSettings: ResolvedS
   return (
     <section id="details" aria-labelledby="details-title" className="bg-buffalo-soft relative">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20" data-reveal>
-        <SectionTitle id="details-title" kicker="Here's the rundown. Screenshot it, save it, tell your cousins.">
+        <SectionTitle id="details-title" kicker="Here's the rundown. Screenshot it and save it.">
           Event Details
         </SectionTitle>
         <div className="mt-8">
