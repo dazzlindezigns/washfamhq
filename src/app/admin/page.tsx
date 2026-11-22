@@ -72,7 +72,18 @@ async function Dashboard() {
   if (rsvpRes.error) {
     return (
       <Shell>
-        <p className="mx-auto max-w-lg text-center text-plaid">Couldn&rsquo;t load RSVPs: {rsvpRes.error.message}</p>
+        <div className="mx-auto max-w-lg text-center">
+          <p className="text-plaid">Couldn&rsquo;t load RSVPs: {rsvpRes.error.message}</p>
+          {/permission denied/i.test(rsvpRes.error.message) ? (
+            <p className="mt-4 text-ink">
+              This usually means <code className="rounded bg-white px-1">SUPABASE_SERVICE_ROLE_KEY</code> in Vercel is set to the{" "}
+              <em>anon/publishable</em> key. Paste the <strong>service_role</strong> (or <strong>secret</strong>) key from Supabase →
+              Project Settings → API Keys, then redeploy.
+            </p>
+          ) : /does not exist|schema cache/i.test(rsvpRes.error.message) ? (
+            <p className="mt-4 text-ink">Looks like a migration hasn&rsquo;t been run yet. Run the SQL files in supabase/migrations, in order.</p>
+          ) : null}
+        </div>
       </Shell>
     );
   }
@@ -175,8 +186,15 @@ async function Dashboard() {
                     </p>
                     <p className="text-sm text-ink-soft">
                       {r.contact_name} · {r.adults} adult{r.adults === 1 ? "" : "s"}, {r.kids} kid{r.kids === 1 ? "" : "s"}
-                      {r.kids_ages ? ` (ages ${r.kids_ages})` : ""}
                     </p>
+                    {r.guests?.length ? (
+                      <p className="text-sm">
+                        <strong>Guests:</strong>{" "}
+                        {r.guests.map((g) => (g.type === "kid" ? `${g.name} (kid)` : g.name)).join(", ")}
+                      </p>
+                    ) : r.status !== "cant" ? (
+                      <p className="text-sm text-plaid">No guest names yet</p>
+                    ) : null}
                     <p className="text-sm">
                       <strong>Dish:</strong> {[categoryLabel(r.dish_category), r.dish].filter(Boolean).join(": ") || "none"}
                     </p>

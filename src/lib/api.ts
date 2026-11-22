@@ -14,7 +14,7 @@ export const MSG = {
 } as const;
 
 export const SELECT_FULL =
-  "id,family_name,contact_name,status,adults,kids,kids_ages,dish_category,dish,game,contact,note,is_host,created_at,updated_at";
+  "id,family_name,contact_name,status,adults,kids,kids_ages,guests,dish_category,dish,game,contact,note,is_host,created_at,updated_at";
 
 export const isUuid = (v: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 

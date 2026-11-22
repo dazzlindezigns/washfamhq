@@ -22,7 +22,7 @@ export async function notifyNewRsvp(r: RsvpRecord) {
     ["Status", r.status],
     ["Adults", String(r.adults)],
     ["Kids", String(r.kids)],
-    ["Kids' ages", r.kids_ages],
+    ["Guests", (r.guests ?? []).map((g) => (g.type === "kid" ? `${g.name} (kid)` : g.name)).join(", ") || null],
     ["Dish", [categoryLabel(r.dish_category), r.dish].filter(Boolean).join(": ") || null],
     ["Contact", r.contact],
     ["Note", r.note],

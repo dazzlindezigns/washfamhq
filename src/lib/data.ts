@@ -5,7 +5,7 @@ import { getAnonClient } from "./supabase";
 import { resolveSettings, type SettingsRow } from "./settings";
 import type { GameIdea, PublicData, PublicRsvp } from "./types";
 
-const PUBLIC_COLUMNS = "id,family_name,status,guest_count,dish_category,dish,game,is_host,created_at";
+const PUBLIC_COLUMNS = "id,family_name,status,guest_count,dish_category,dish,game,is_host,created_at,guest_names";
 const IDEA_COLUMNS = "id,title,how_to_play,links,shared_by,created_at,updated_at";
 
 /** Uncached read of everything the public page needs. */
@@ -32,7 +32,8 @@ export async function fetchPublicData(): Promise<PublicData> {
     return { ok: false, error: "fetch_failed", settings, rsvps: [], ideas, generatedAt: Date.now() };
   }
 
-  return { ok: true, settings, rsvps: (rsvpRes.data ?? []) as PublicRsvp[], ideas, generatedAt: Date.now() };
+  const rsvps = ((rsvpRes.data ?? []) as PublicRsvp[]).map((r) => ({ ...r, guest_names: Array.isArray(r.guest_names) ? r.guest_names : [] }));
+  return { ok: true, settings, rsvps, ideas, generatedAt: Date.now() };
 }
 
 /** Per-request, deduped read for Server Components. Always dynamic (fresh every visit). */

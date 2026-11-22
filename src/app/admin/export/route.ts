@@ -19,7 +19,7 @@ export async function GET() {
   const { data, error } = await supabase.from("xmas_rsvps").select(SELECT_FULL).order("created_at", { ascending: true });
   if (error) return new Response(`Export failed: ${error.message}`, { status: 500 });
 
-  const header = ["Family", "Contact name", "Status", "Adults", "Kids", "Kids' ages", "Dish category", "Dish", "Phone/email", "Note", "Host", "RSVP'd at", "Updated at"];
+  const header = ["Family", "Contact name", "Status", "Adults", "Kids", "Guest names", "Dish category", "Dish", "Phone/email", "Note", "Host", "RSVP'd at", "Updated at"];
   const lines = (data as RsvpRecord[]).map((r) =>
     [
       r.family_name,
@@ -27,7 +27,7 @@ export async function GET() {
       r.status,
       r.adults,
       r.kids,
-      r.kids_ages,
+      (r.guests ?? []).map((g) => (g.type === "kid" ? `${g.name} (kid)` : g.name)).join("; "),
       categoryLabel(r.dish_category),
       r.dish,
       r.contact,

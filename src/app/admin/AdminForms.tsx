@@ -168,11 +168,33 @@ export function RsvpEditor({ r }: { r?: RsvpRecord }) {
           <input id={`kids-${k}`} name="kids" type="number" min={0} max={40} defaultValue={r?.kids ?? 0} className={input} />
         </div>
       </div>
-      <div>
-        <label htmlFor={`ages-${k}`} className={label}>
-          Kids&rsquo; ages
+      <div className="sm:col-span-2">
+        <label htmlFor={`adultnames-${k}`} className={label}>
+          Adult names <span className="font-normal text-ink-soft">(one per line)</span>
         </label>
-        <input id={`ages-${k}`} name="kidsAges" defaultValue={r?.kids_ages ?? ""} className={input} />
+        <textarea
+          id={`adultnames-${k}`}
+          name="adultNamesText"
+          rows={3}
+          defaultValue={(r?.guests ?? []).filter((g) => g.type === "adult").map((g) => g.name).join("\n")}
+          className={input}
+        />
+      </div>
+      <div className="sm:col-span-2">
+        <label htmlFor={`kidnames-${k}`} className={label}>
+          Kid names <span className="font-normal text-ink-soft">(one per line)</span>
+        </label>
+        <textarea
+          id={`kidnames-${k}`}
+          name="kidNamesText"
+          rows={3}
+          defaultValue={(r?.guests ?? [])
+            .filter((g) => g.type === "kid")
+            .map((g) => g.name)
+            .join("\n")}
+          className={input}
+        />
+        <p className="mt-1 text-xs text-ink-soft">If you type names, the Adults/Kids numbers update to match.</p>
       </div>
       <div>
         <label htmlFor={`cat-${k}`} className={label}>

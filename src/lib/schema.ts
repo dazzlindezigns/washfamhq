@@ -13,6 +13,8 @@ export function looksLikePhoneOrEmail(v: string) {
   return /^[\d\s()+.\-]+$/.test(s) && digits.length >= 7 && digits.length <= 15;
 }
 
+const guestName = z.preprocess((v) => (typeof v === "string" ? v : ""), z.string().trim().max(60, "Keep each name under 60 characters."));
+
 const count = (label: string) =>
   z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? 0 : v),
@@ -39,6 +41,18 @@ export const rsvpSchema = z
     adults: count("adults"),
     kids: count("kids"),
     kidsAges: optionalText(120, "Keep the kids' ages short and sweet (120 characters)."),
+    /** One name per adult (same order as the "Adults" count). */
+    adultNames: z.array(guestName).max(40).default([]),
+    /** One entry per kid: name + optional age. */
+    kidGuests: z
+      .array(
+        z.object({
+          name: guestName,
+          age: z.preprocess(blankToUndefined, z.string().trim().max(10, "Keep the age short, like 7 or 18 mo.").optional()),
+        }),
+      )
+      .max(40)
+      .default([]),
     dishCategory: z.preprocess(
       blankToUndefined,
       z.enum(DISH_CATEGORY_IDS, { error: "Pick a dish category." }).optional(),
@@ -57,6 +71,18 @@ export const rsvpSchema = z
     if (d.status !== "cant" && d.adults + d.kids < 1) {
       ctx.addIssue({ code: "custom", path: ["adults"], message: "Somebody has to come! Add at least one person." });
     }
+    if (d.status !== "cant") {
+      for (let i = 0; i < d.adults; i++) {
+        if (!d.adultNames[i]) {
+          ctx.addIssue({ code: "custom", path: ["adultNames", i], message: `Who's adult #${i + 1}? Put their name in.` });
+        }
+      }
+      for (let i = 0; i < d.kids; i++) {
+        if (!d.kidGuests[i]?.name) {
+          ctx.addIssue({ code: "custom", path: ["kidGuests", i, "name"], message: `What's kid #${i + 1}'s name?` });
+        }
+      }
+    }
     if (d.status === "coming") {
       if (!d.dishCategory) {
         ctx.addIssue({ code: "custom", path: ["dishCategory"], message: "You're coming, so pick a dish category. Every family brings a dish!" });
@@ -72,6 +98,11 @@ export type RsvpParsed = z.output<typeof rsvpSchema>;
 
 export type FieldName = keyof RsvpParsed;
 
+/** Error keys: a field name, or a nested path like "adultNames.1" / "kidGuests.0.name". */
+export type FormErrors = Record<string, string | undefined>;
+
+export const errorStep = (key: string) => FIELD_STEP[key.split(".")[0] as FieldName] ?? 0;
+
 /** Which form step each field lives on (used to jump to the right step on errors). */
 export const FIELD_STEP: Record<FieldName, number> = {
   familyName: 0,
@@ -80,6 +111,8 @@ export const FIELD_STEP: Record<FieldName, number> = {
   adults: 0,
   kids: 0,
   kidsAges: 0,
+  adultNames: 0,
+  kidGuests: 0,
   dishCategory: 1,
   dish: 1,
   game: 1,
@@ -88,25 +121,39 @@ export const FIELD_STEP: Record<FieldName, number> = {
   website: 2,
 };
 
-export function fieldErrorsFrom(error: z.ZodError) {
-  const out: Partial<Record<FieldName, string>> = {};
+export function fieldErrorsFrom(error: z.ZodError): FormErrors {
+  const out: FormErrors = {};
   for (const issue of error.issues) {
-    const key = issue.path[0] as FieldName | undefined;
+    const key = issue.path.map(String).join(".");
     if (key && !out[key]) out[key] = issue.message;
   }
   return out;
 }
 
+export type Guest = { name: string; type: "adult" | "kid"; age?: string | null };
+
+export function guestsFrom(d: Pick<RsvpParsed, "status" | "adults" | "kids" | "adultNames" | "kidGuests">): Guest[] {
+  if (d.status === "cant") return [];
+  const adults = d.adultNames.slice(0, d.adults).filter(Boolean).map((name) => ({ name, type: "adult" as const }));
+  const kids = d.kidGuests
+    .slice(0, d.kids)
+    .filter((k) => k.name)
+    .map((k) => ({ name: k.name, type: "kid" as const, age: k.age ?? null }));
+  return [...adults, ...kids];
+}
+
 /** Convert parsed input to DB columns. */
 export function toDbRow(d: RsvpParsed) {
   const cant = d.status === "cant";
+  const guests = guestsFrom(d);
   return {
+    guests,
     family_name: d.familyName,
     contact_name: d.contactName,
     status: d.status,
     adults: cant ? 0 : d.adults,
     kids: cant ? 0 : d.kids,
-    kids_ages: cant || d.kids === 0 ? null : (d.kidsAges ?? null),
+    kids_ages: null,
     dish_category: cant ? null : (d.dishCategory ?? null),
     dish: cant ? null : (d.dish ?? null),
     game: cant ? null : (d.game ?? null),

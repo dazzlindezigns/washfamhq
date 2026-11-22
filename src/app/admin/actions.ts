@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { refresh } from "next/cache";
 import { DISH_CATEGORY_IDS, type DishCategoryId } from "@/config/event";
 import { ADMIN_COOKIE, checkPasscode, isAdmin, makeSessionValue } from "@/lib/admin-auth";
-import { fieldErrorsFrom, rsvpSchema, toDbRow } from "@/lib/schema";
+import { fieldErrorsFrom, rsvpSchema, toDbRow, type RsvpParsed } from "@/lib/schema";
 import { getServiceClient } from "@/lib/supabase";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -44,36 +44,56 @@ export async function logout() {
   refresh();
 }
 
+const lines = (v: FormDataEntryValue | null) =>
+  String(v ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
 export async function saveRsvp(_prev: ActionState, formData: FormData): Promise<ActionState> {
   try {
     const supabase = await requireAdmin();
     const id = String(formData.get("id") ?? "");
     const raw = Object.fromEntries(formData.entries());
-    const parsed = rsvpSchema.safeParse({ ...raw, website: "" });
-    // Admin can save even if a "coming" family hasn't picked a dish yet.
-    const relaxed = parsed.success
-      ? parsed.data
-      : (() => {
-          const errs = fieldErrorsFrom(parsed.error);
-          const blocking = Object.keys(errs).filter((k) => k !== "dishCategory" && k !== "dish");
-          if (blocking.length) throw new Error(errs[blocking[0] as keyof typeof errs]);
-          return null;
-        })();
-    const row = relaxed
-      ? toDbRow(relaxed)
-      : {
-          family_name: String(raw.familyName).trim(),
-          contact_name: String(raw.contactName).trim(),
-          status: String(raw.status),
-          adults: Number(raw.adults) || 0,
-          kids: Number(raw.kids) || 0,
-          kids_ages: String(raw.kidsAges ?? "").trim() || null,
-          dish_category: DISH_CATEGORY_IDS.includes(raw.dishCategory as DishCategoryId) ? String(raw.dishCategory) : null,
-          dish: String(raw.dish ?? "").trim() || null,
-          game: String(raw.game ?? "").trim() || null,
-          contact: String(raw.contact ?? "").trim() || null,
-          note: String(raw.note ?? "").trim() || null,
-        };
+    const adultNames = lines(formData.get("adultNamesText"));
+    const kidGuests = lines(formData.get("kidNamesText")).map((name) => ({ name }));
+    const input = {
+      ...raw,
+      adultNames,
+      kidGuests,
+      // Names win over the number boxes when you've typed them.
+      adults: adultNames.length || raw.adults,
+      kids: kidGuests.length || raw.kids,
+      website: "",
+    };
+    const parsed = rsvpSchema.safeParse(input);
+    let data: RsvpParsed;
+    if (parsed.success) {
+      data = parsed.data;
+    } else {
+      // Admin can save even without a dish or every name filled in.
+      const errs = fieldErrorsFrom(parsed.error);
+      const blocking = Object.keys(errs).filter((k) => !/^(dishCategory|dish|adultNames|kidGuests)(\.|$)/.test(k));
+      if (blocking.length) throw new Error(errs[blocking[0]]);
+      const str = (k: string) => String(raw[k] ?? "").trim() || undefined;
+      data = {
+        familyName: String(raw.familyName).trim(),
+        contactName: String(raw.contactName).trim(),
+        status: String(raw.status) as RsvpParsed["status"],
+        adults: Number(input.adults) || 0,
+        kids: Number(input.kids) || 0,
+        kidsAges: str("kidsAges"),
+        adultNames,
+        kidGuests,
+        dishCategory: DISH_CATEGORY_IDS.includes(raw.dishCategory as DishCategoryId) ? (raw.dishCategory as DishCategoryId) : undefined,
+        dish: str("dish"),
+        game: str("game"),
+        contact: str("contact"),
+        note: str("note"),
+        website: "",
+      };
+    }
+    const row = toDbRow(data);
     if (id) {
       const { error } = await supabase.from("xmas_rsvps").update(row).eq("id", id);
       if (error) throw new Error(error.message);

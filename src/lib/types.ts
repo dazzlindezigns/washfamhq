@@ -13,6 +13,8 @@ export type PublicRsvp = {
   game: string | null;
   is_host: boolean;
   created_at: string;
+  /** Public guest names (adults first, then kids). Ages are never public. */
+  guest_names: string[];
 };
 
 /** A full row from xmas_rsvps (server/admin only). */
@@ -22,6 +24,7 @@ export type RsvpRecord = PublicRsvp & {
   adults: number;
   kids: number;
   kids_ages: string | null;
+  guests: { name: string; type: "adult" | "kid"; age?: string | null }[];
   contact: string | null;
   note: string | null;
   updated_at: string;

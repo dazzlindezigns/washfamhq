@@ -67,6 +67,12 @@ function FamilyCard({ r, mine, highlight }: { r: PublicRsvp; mine: boolean; high
           <dt className="inline font-semibold">Guests: </dt>
           <dd className="inline">{r.guest_count}</dd>
         </div>
+        {r.guest_names.length ? (
+          <div>
+            <dt className="sr-only">Who&rsquo;s coming</dt>
+            <dd className="text-cream">{r.guest_names.join(", ")}</dd>
+          </div>
+        ) : null}
         <div>
           <dt className="inline font-semibold">Bringing: </dt>
           <dd className="inline break-words">{bringing}</dd>

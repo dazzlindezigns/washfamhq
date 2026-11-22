@@ -11,7 +11,7 @@ import {
   writeMyRsvp,
   type ClaimDetail,
 } from "@/lib/live-store";
-import { FIELD_STEP, fieldErrorsFrom, rsvpSchema, type FieldName } from "@/lib/schema";
+import { errorStep, fieldErrorsFrom, rsvpSchema, type FormErrors } from "@/lib/schema";
 import { dishTiles, openCategories } from "@/lib/summary";
 import type { RsvpStatus } from "@/lib/types";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -24,6 +24,8 @@ type FormState = {
   adults: number;
   kids: number;
   kidsAges: string;
+  adultNames: string[];
+  kidGuests: { name: string; age: string }[];
   dishCategory: DishCategoryId | "";
   dish: string;
   game: string;
@@ -39,6 +41,8 @@ const EMPTY: FormState = {
   adults: 1,
   kids: 0,
   kidsAges: "",
+  adultNames: [""],
+  kidGuests: [],
   dishCategory: "",
   dish: "",
   game: "",
@@ -49,7 +53,10 @@ const EMPTY: FormState = {
 
 const STEP_TITLES = ["Who y'all are", "The dish", "Last thing"];
 
-type Errors = Partial<Record<FieldName, string>>;
+type Errors = FormErrors;
+
+const resize = <T,>(list: T[], n: number, blank: () => T) =>
+  list.length >= n ? list.slice(0, n) : [...list, ...Array.from({ length: n - list.length }, blank)];
 type Phase = "form" | "success";
 
 function stepsFor(status: FormState["status"]) {
@@ -83,9 +90,32 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
 
   const tiles = useMemo(() => (live?.ok ? dishTiles(live.rsvps, live.settings) : null), [live]);
 
+  const clearError = (key: string) => {
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((f) => ({ ...f, [key]: value }));
-    if (errors[key as FieldName]) setErrors((e) => ({ ...e, [key]: undefined }));
+    setForm((f) => {
+      const next = { ...f, [key]: value };
+      // Keep one name box per person.
+      if (key === "adults") next.adultNames = resize(f.adultNames, value as number, () => "");
+      if (key === "kids") next.kidGuests = resize(f.kidGuests, value as number, () => ({ name: "", age: "" }));
+      // Pre-fill adult #1 with the person filling out the form.
+      if (key === "contactName" && (f.adultNames[0] ?? "") === f.contactName && f.adultNames.length > 0) {
+        next.adultNames = [value as string, ...f.adultNames.slice(1)];
+      }
+      return next;
+    });
+    clearError(key as string);
+  };
+
+  const setAdultName = (i: number, v: string) => {
+    setForm((f) => ({ ...f, adultNames: f.adultNames.map((n, j) => (j === i ? v : n)) }));
+    clearError(`adultNames.${i}`);
+  };
+  const setKid = (i: number, patch: Partial<{ name: string; age: string }>) => {
+    setForm((f) => ({ ...f, kidGuests: f.kidGuests.map((k, j) => (j === i ? { ...k, ...patch } : k)) }));
+    if (patch.name !== undefined) clearError(`kidGuests.${i}.name`);
   };
 
   const goTo = useCallback((s: number) => {
@@ -128,6 +158,19 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
           adults: rsvp.adults ?? 1,
           kids: rsvp.kids ?? 0,
           kidsAges: rsvp.kids_ages ?? "",
+          ...(() => {
+            const guests: { name: string; type: string; age?: string | null }[] = Array.isArray(rsvp.guests) ? rsvp.guests : [];
+            const adults = rsvp.adults ?? 1;
+            const kids = rsvp.kids ?? 0;
+            return {
+              adultNames: resize(guests.filter((g) => g.type === "adult").map((g) => g.name), adults, () => ""),
+              kidGuests: resize(
+                guests.filter((g) => g.type === "kid").map((g) => ({ name: g.name, age: g.age ?? "" })),
+                kids,
+                () => ({ name: "", age: "" }),
+              ),
+            };
+          })(),
           dishCategory: rsvp.dish_category ?? "",
           dish: rsvp.dish ?? "",
           game: rsvp.game ?? "",
@@ -176,18 +219,30 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
     if (result.success) return { ok: true as const, data: result.data, errs: {} as Errors };
     const all = fieldErrorsFrom(result.error);
     const errs: Errors = {};
-    for (const [k, v] of Object.entries(all) as [FieldName, string][]) {
-      if (fieldsOnStep === undefined || FIELD_STEP[k] === fieldsOnStep) errs[k] = v;
+    for (const [k, v] of Object.entries(all)) {
+      if (fieldsOnStep === undefined || errorStep(k) === fieldsOnStep) errs[k] = v;
     }
     return { ok: Object.keys(errs).length === 0, data: null, errs };
   }
 
   function focusFirstError(errs: Errors) {
-    const order: FieldName[] = ["familyName", "contactName", "status", "adults", "kids", "kidsAges", "dishCategory", "dish", "game", "contact", "note"];
-    const first = order.find((k) => errs[k]);
+    const order = [
+      "familyName",
+      "contactName",
+      "status",
+      "adults",
+      "kids",
+      ...form.adultNames.map((_, i) => `adultNames.${i}`),
+      ...form.kidGuests.map((_, i) => `kidGuests.${i}.name`),
+      "dishCategory",
+      "dish",
+      "contact",
+      "note",
+    ];
+    const first = order.find((k) => errs[k]) ?? Object.keys(errs).find((k) => errs[k]);
     if (!first) return;
     setTimeout(() => {
-      const el = document.getElementById(`${uid}-${first}`) as HTMLElement | null;
+      const el = document.getElementById(`${uid}-${first.replace(/\./g, "-")}`) as HTMLElement | null;
       el?.focus();
     }, 30);
   }
@@ -218,7 +273,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
     const v = validate();
     if (!v.ok || !v.data) {
       setErrors(v.errs);
-      const firstStep = Math.min(...Object.keys(v.errs).map((k) => FIELD_STEP[k as FieldName]));
+      const firstStep = Math.min(...Object.keys(v.errs).map((k) => errorStep(k)));
       if (firstStep !== step) {
         setFormError(firstStep === 0 ? "Hold up, I still need a couple things up top." : "Almost! Fix the dish part first.");
         goTo(firstStep);
@@ -274,10 +329,10 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
     goTo(0);
   }
 
-  const err = (k: FieldName) => errors[k];
-  const describedBy = (k: FieldName, hint?: boolean) =>
+  const err = (k: string) => errors[k];
+  const describedBy = (k: string, hint?: boolean) =>
     [hint ? `${uid}-${k}-hint` : null, err(k) ? `${uid}-${k}-err` : null].filter(Boolean).join(" ") || undefined;
-  const errorText = (k: FieldName) =>
+  const errorText = (k: string) =>
     err(k) ? (
       <p id={`${uid}-${k}-err`} className="mt-1.5 text-sm font-semibold text-plaid">
         {err(k)}
@@ -462,26 +517,74 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             </div>
           ) : null}
 
-          {form.status !== "cant" && form.kids > 0 ? (
-            <div>
-              <label htmlFor={`${uid}-kidsAges`} className="block font-semibold text-ink">
-                Kids&rsquo; ages <span className="font-normal text-ink-soft">(optional)</span>
-              </label>
-              <input
-                id={`${uid}-kidsAges`}
-                className="field mt-1.5"
-                value={form.kidsAges}
-                onChange={(e) => set("kidsAges", e.target.value)}
-                placeholder="e.g. 4, 9, and 13"
-                maxLength={120}
-                aria-invalid={!!err("kidsAges")}
-                aria-describedby={describedBy("kidsAges", true)}
-              />
-              <p id={`${uid}-kidsAges-hint`} className="mt-1 text-sm text-ink-soft">
-                Helps us plan games and snacks for the little (and not so little) ones.
+          {form.status !== "cant" && form.adults + form.kids > 0 ? (
+            <fieldset className="rounded-2xl border-2 border-[#e3d3b1] bg-cream/60 p-4">
+              <legend className="px-1 font-semibold text-ink">
+                Who all is coming? <span className="text-plaid">*</span>
+              </legend>
+              <p className="text-sm text-ink-soft">
+                Put everybody&rsquo;s name. Names show on your family&rsquo;s card in &ldquo;Who All Over There?&rdquo;
               </p>
-              {errorText("kidsAges")}
-            </div>
+              <ul className="mt-3 space-y-3">
+                {form.adultNames.map((n, i) => {
+                  const key = `adultNames.${i}`;
+                  const id = `${uid}-adultNames-${i}`;
+                  return (
+                    <li key={`a${i}`}>
+                      <label htmlFor={id} className="block text-sm font-semibold text-ink">
+                        Adult {i + 1}
+                        {i === 0 ? <span className="font-normal text-ink-soft"> (that&rsquo;s probably you)</span> : null}
+                      </label>
+                      <input
+                        id={id}
+                        className="field mt-1"
+                        value={n}
+                        onChange={(e) => setAdultName(i, e.target.value)}
+                        placeholder="Full name or what we call them"
+                        maxLength={60}
+                        autoComplete="off"
+                        aria-invalid={!!err(key)}
+                        aria-describedby={err(key) ? `${id}-err` : undefined}
+                      />
+                      {err(key) ? (
+                        <p id={`${id}-err`} className="mt-1.5 text-sm font-semibold text-plaid">
+                          {err(key)}
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+                {form.kidGuests.map((k, i) => {
+                  const key = `kidGuests.${i}.name`;
+                  const id = `${uid}-kidGuests-${i}-name`;
+                  return (
+                    <li key={`k${i}`}>
+                      <div>
+                        <label htmlFor={id} className="block text-sm font-semibold text-ink">
+                          Kid {i + 1}
+                        </label>
+                        <input
+                          id={id}
+                          className="field mt-1"
+                          value={k.name}
+                          onChange={(e) => setKid(i, { name: e.target.value })}
+                          placeholder="Name"
+                          maxLength={60}
+                          autoComplete="off"
+                          aria-invalid={!!err(key)}
+                          aria-describedby={err(key) ? `${id}-err` : undefined}
+                        />
+                      </div>
+                      {err(key) ? (
+                        <p id={`${id}-err`} className="mt-1.5 text-sm font-semibold text-plaid">
+                          {err(key)}
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </fieldset>
           ) : null}
         </div>
 
@@ -491,7 +594,11 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             <li>
               <strong>Finger foods only.</strong> Think grab-and-go, no knife and fork required.
             </li>
-            <li>Bring it in something disposable or easy to clean. We&rsquo;ve got the plates, cups, and napkins.</li>
+            <li>Bring it in something disposable or easy to clean.</li>
+            <li>
+              <strong>Bring the serving utensils for your dish</strong> (tongs, serving spoon, etc.). We&rsquo;ve got the
+              plates, cups, napkins, forks, and spoons.
+            </li>
             <li>
               <strong>Plus one small gift</strong> per family for the game prize table.
             </li>
