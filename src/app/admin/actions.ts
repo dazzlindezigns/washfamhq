@@ -134,3 +134,12 @@ export async function saveSettings(_prev: ActionState, formData: FormData): Prom
     return { message: e instanceof Error ? e.message : "Couldn't save settings." };
   }
 }
+
+export async function deleteGameIdea(formData: FormData) {
+  const supabase = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const { error } = await supabase.from("xmas_game_ideas").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  refresh();
+}

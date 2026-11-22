@@ -8,7 +8,7 @@ import { SELECT_FULL } from "@/lib/api";
 import { resolveSettings, type SettingsRow } from "@/lib/settings";
 import { categoryLabel } from "@/lib/summary";
 import { getServiceClient } from "@/lib/supabase";
-import type { RsvpRecord } from "@/lib/types";
+import type { GameIdea, RsvpRecord } from "@/lib/types";
 import { logout } from "./actions";
 import { DeleteButton, LoginForm, RsvpEditor, SettingsForm } from "./AdminForms";
 
@@ -63,10 +63,12 @@ async function Dashboard() {
       </Shell>
     );
   }
-  const [rsvpRes, settingsRes] = await Promise.all([
+  const [rsvpRes, settingsRes, ideasRes] = await Promise.all([
     supabase.from("xmas_rsvps").select(SELECT_FULL).order("created_at", { ascending: true }),
     supabase.from("xmas_settings").select("*").eq("id", 1).maybeSingle(),
+    supabase.from("xmas_game_ideas").select("id,title,how_to_play,links,shared_by,created_at,updated_at").order("created_at", { ascending: true }),
   ]);
+  const ideas = (ideasRes.data ?? []) as GameIdea[];
   if (rsvpRes.error) {
     return (
       <Shell>
@@ -126,7 +128,7 @@ async function Dashboard() {
             {stat("Adults", sum(coming, "adults"), `+${sum(maybe, "adults")} maybe`)}
             {stat("Kids", sum(coming, "kids"), `+${sum(maybe, "kids")} maybe`)}
             {stat("Total RSVPs", rsvps.length)}
-            {stat("Bringing games", rsvps.filter((r) => r.status !== "cant" && r.game).length)}
+            {stat("Game ideas", ideasRes.error ? "?" : ideas.length)}
           </div>
           <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
             {perCat.map((c) => (
@@ -177,12 +179,6 @@ async function Dashboard() {
                     </p>
                     <p className="text-sm">
                       <strong>Dish:</strong> {[categoryLabel(r.dish_category), r.dish].filter(Boolean).join(": ") || "none"}
-                      {r.game ? (
-                        <>
-                          {" "}
-                          · <strong>Game:</strong> {r.game}
-                        </>
-                      ) : null}
                     </p>
                     {r.contact ? (
                       <p className="text-sm">
@@ -213,6 +209,44 @@ async function Dashboard() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section aria-labelledby="ideas-h" className="mt-10">
+          <h2 id="ideas-h" className="font-display text-2xl uppercase text-ink">
+            Game ideas ({ideas.length})
+          </h2>
+          {ideasRes.error ? (
+            <p className="mt-3 text-plaid">Couldn&rsquo;t load game ideas: {ideasRes.error.message}. Did you run the second migration?</p>
+          ) : ideas.length === 0 ? (
+            <p className="mt-3">No game ideas yet.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {ideas.map((g) => (
+                <li key={g.id} className="rounded-2xl border-2 border-gold-deep/50 bg-white p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg font-semibold">{g.title}</p>
+                      {g.shared_by ? <p className="text-sm text-ink-soft">Shared by {g.shared_by}</p> : null}
+                      <p className="mt-1 whitespace-pre-line text-sm">{g.how_to_play}</p>
+                      {Array.isArray(g.links) && g.links.length ? (
+                        <ul className="mt-1 text-sm">
+                          {g.links.map((l, i) => (
+                            <li key={i}>
+                              <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="break-all text-wine underline">
+                                {l.label ? `${l.label}: ` : ""}
+                                {l.url}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                    <DeleteButton id={g.id} name={g.title} kind="idea" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section aria-labelledby="add-h" className="mt-10 rounded-2xl border-2 border-dashed border-gold-deep/60 bg-white p-5">

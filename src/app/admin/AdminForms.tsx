@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { useHydrated } from "@/lib/use-hydrated";
 import { DISH_CATEGORIES } from "@/config/event";
 import type { RsvpRecord } from "@/lib/types";
-import { deleteRsvp, login, saveRsvp, saveSettings, type ActionState } from "./actions";
+import { deleteGameIdea, deleteRsvp, login, saveRsvp, saveSettings, type ActionState } from "./actions";
 
 const input = "mt-1 w-full rounded-lg border-2 border-[#c9ae7d] bg-white px-3 py-2 text-base text-ink focus:border-wine focus:outline-none";
 const label = "block text-sm font-semibold text-ink";
@@ -193,12 +193,6 @@ export function RsvpEditor({ r }: { r?: RsvpRecord }) {
         </label>
         <input id={`dish-${k}`} name="dish" defaultValue={r?.dish ?? ""} className={input} />
       </div>
-      <div>
-        <label htmlFor={`game-${k}`} className={label}>
-          Game
-        </label>
-        <input id={`game-${k}`} name="game" defaultValue={r?.game ?? ""} className={input} />
-      </div>
       <div className="sm:col-span-2">
         <label htmlFor={`contact-${k}`} className={label}>
           Phone / email
@@ -221,12 +215,13 @@ export function RsvpEditor({ r }: { r?: RsvpRecord }) {
   );
 }
 
-export function DeleteButton({ id, name }: { id: string; name: string }) {
+export function DeleteButton({ id, name, kind = "rsvp" }: { id: string; name: string; kind?: "rsvp" | "idea" }) {
   return (
     <form
-      action={deleteRsvp}
+      action={kind === "idea" ? deleteGameIdea : deleteRsvp}
       onSubmit={(e) => {
-        if (!window.confirm(`Delete ${name}'s RSVP? This can't be undone.`)) e.preventDefault();
+        const msg = kind === "idea" ? `Delete the game idea "${name}"?` : `Delete ${name}'s RSVP? This can't be undone.`;
+        if (!window.confirm(msg)) e.preventDefault();
       }}
     >
       <input type="hidden" name="id" value={id} />
