@@ -31,15 +31,16 @@ No secrets are committed. `.env*` is git-ignored except `.env.example`.
 
 1. `supabase/migrations/20261121000000_xmas_game_night.sql`: tables, view, RLS, host card
 2. `supabase/migrations/20261122000000_xmas_menu_and_game_ideas.sql`: finger-food categories (Meats, Sides, Chips & Dip, Desserts, Drinks), prize-gift rule, drops the plaid note, and the Game Ideas board
+3. `supabase/migrations/20261122010000_xmas_guest_names.sql`: guest names (shown publicly on each family's card) and the serving-utensils dish rule
 
-Open Supabase → **SQL Editor** → paste each file → **Run**. Both are idempotent, so running them again is safe. They only touch `xmas_`-prefixed objects and never your other apps' tables. Migration 2 moves any old dish claims onto the new categories (Entrée → Meats; Side/Salad/Fruit → Sides; Dessert → Desserts).
+Open Supabase → **SQL Editor** → paste each file → **Run**. All are idempotent, so running them again is safe. They only touch `xmas_`-prefixed objects and never your other apps' tables. Migration 2 moves any old dish claims onto the new categories (Entrée → Meats; Side/Salad/Fruit → Sides; Dessert → Desserts).
 
 What it creates:
 
 | Object | Purpose |
 | --- | --- |
 | `xmas_rsvps` | All RSVP data, including phone/email, notes, and the edit token. RLS is on, and anon/authenticated have **no** access |
-| `xmas_public_rsvps` (view) | The only thing the public site reads: id, family name, status, guest count, dish, game. No contact info |
+| `xmas_public_rsvps` (view) | The only thing the public site reads: id, family name, guest names, status, guest count, dish. No contact info |
 | `xmas_settings` | One row (`id = 1`) of event settings. Public read-only |
 | `xmas_game_ideas` | Game ideas: name, how to play, video links, who shared it, edit token. Locked like RSVPs |
 | `xmas_public_game_ideas` (view) | Public read of game ideas, minus the edit token |
@@ -93,7 +94,7 @@ From there you can:
 - RSVP create/edit goes through `/api/rsvp` (zod validation, honeypot field, DB-backed rate limit), which writes with the service-role key.
 - Game ideas work the same way: anyone can add ideas with links, and only the device that added one (or `/admin`) can edit or remove it.
 - Editing: each RSVP gets a random edit token stored in the guest's browser (localStorage), which unlocks "Update my RSVP" on that device. Without the token, nobody can read or change it.
-- Phone, email, notes, and the contact name are only visible in `/admin` and the CSV.
+- Guest names are public on purpose (they show on each family card). Phone, email, and notes are only visible in `/admin` and the CSV.
 - The site is set to `noindex`, so it won't show up in search results.
 
 ## Live updates
