@@ -13,6 +13,7 @@ export type SettingsRow = Partial<{
   attire: string | null;
   attire_note: string | null;
   dish_rule: string | null;
+  gift_rule: string | null;
   tone_line: string | null;
   category_limits: Record<string, unknown> | null;
 }>;
@@ -81,6 +82,7 @@ export function resolveSettings(row: SettingsRow | null | undefined): ResolvedSe
     attire: clean(r.attire) ?? eventConfig.attire,
     attireNote: clean(r.attire_note) ?? eventConfig.attireNote,
     dishRule: clean(r.dish_rule) ?? eventConfig.dishRule,
+    giftRule: clean(r.gift_rule) ?? eventConfig.giftRule,
     toneLine: clean(r.tone_line) ?? eventConfig.toneLine,
     categoryLimits: resolveLimits(r.category_limits),
   };

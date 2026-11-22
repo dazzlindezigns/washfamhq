@@ -10,12 +10,11 @@
  */
 
 export const DISH_CATEGORIES = [
-  { id: "entree", label: "Entrée", plural: "entrées", image: "/images/food/entree.webp", alt: "Roasted turkey with vegetables" },
-  { id: "side", label: "Side Dish", plural: "sides", image: "/images/food/side.webp", alt: "A big bowl of baked mac and cheese" },
-  { id: "salad", label: "Salad", plural: "salads", image: "/images/food/salad.webp", alt: "A colorful tossed salad" },
-  { id: "dessert", label: "Dessert", plural: "desserts", image: "/images/food/dessert.webp", alt: "A glazed bundt cake topped with berries" },
-  { id: "fruit", label: "Fruit", plural: "fruit trays", image: "/images/food/fruit.webp", alt: "A bowl of mixed fresh fruit" },
-  { id: "drinks", label: "Drinks", plural: "drinks", image: "/images/food/drinks.webp", alt: "Glasses of red holiday punch" },
+  { id: "meats", label: "Meats", plural: "meats", image: "/images/menu/meats.webp", alt: "Meats: glazed wings, meatballs on toothpicks, and sliced sausage" },
+  { id: "sides", label: "Sides", plural: "sides", image: "/images/menu/sides.webp", alt: "Sides: a snack board with cheese cubes, meat roses, fruit, crackers, and dip" },
+  { id: "chips", label: "Chips & Dip", plural: "chips and dip", image: "/images/menu/chips.webp", alt: "Chips & Dip: tortilla chips, potato chips, and pretzels with queso, ranch, and salsa" },
+  { id: "desserts", label: "Desserts", plural: "desserts", image: "/images/menu/desserts.webp", alt: "Desserts: chocolate-dipped strawberries, cupcakes, brownies, and cake pops" },
+  { id: "drinks", label: "Drinks", plural: "drinks", image: "/images/menu/drinks.webp", alt: "Drinks: pitchers of punch and lemonade, bottled water on ice, and cups" },
 ] as const;
 
 export type DishCategoryId = (typeof DISH_CATEGORIES)[number]["id"];
@@ -44,8 +43,14 @@ export const eventConfig = {
   mapsUrl: null as string | null,
 
   attire: "Christmas pajamas (required)",
-  attireNote: "Plaid matching encouraged",
-  dishRule: "Every family brings a dish",
+  /** Optional extra line under attire. null = nothing shown. */
+  attireNote: null as string | null,
+  dishRule: "Every family brings a finger-food dish",
+  /** Shown with the dish rule. */
+  giftRule: "Plus one small gift for game prizes",
+  /** What the hosts are covering. */
+  paperGoods:
+    "The Washingtons have the paper goods covered (plates, cups, and napkins). Bring your dish in something disposable or easy to clean, so nobody's stuck washing dishes on Christmas Eve.",
   toneLine: "fun, festive, and faith-filled",
 
   /**
@@ -54,11 +59,10 @@ export const eventConfig = {
    * null = no limit.
    */
   categoryLimits: {
-    entree: 4,
-    side: 6,
-    salad: 3,
-    dessert: 4,
-    fruit: 2,
+    meats: 4,
+    sides: 4,
+    chips: 3,
+    desserts: 4,
     drinks: 3,
   } as Record<DishCategoryId, number | null>,
 

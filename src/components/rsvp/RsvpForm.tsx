@@ -47,7 +47,7 @@ const EMPTY: FormState = {
   website: "",
 };
 
-const STEP_TITLES = ["Who y'all are", "The dish (and a game?)", "Last thing"];
+const STEP_TITLES = ["Who y'all are", "The dish", "Last thing"];
 
 type Errors = Partial<Record<FieldName, string>>;
 type Phase = "form" | "success";
@@ -487,6 +487,15 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
 
         {/* ---------- Step 2: dish + game ---------- */}
         <div hidden={step !== 1} className="mt-5 space-y-5">
+          <ul className="space-y-1 rounded-2xl bg-cream-deep/70 px-4 py-3 text-sm text-ink">
+            <li>
+              <strong>Finger foods only.</strong> Think grab-and-go, no knife and fork required.
+            </li>
+            <li>Bring it in something disposable or easy to clean. We&rsquo;ve got the plates, cups, and napkins.</li>
+            <li>
+              <strong>Plus one small gift</strong> per family for the game prize table.
+            </li>
+          </ul>
           <fieldset>
             <legend className="font-semibold text-ink">
               Pick a dish category {form.status === "coming" ? <span className="text-plaid">*</span> : <span className="font-normal text-ink-soft">(optional for maybes)</span>}
@@ -534,7 +543,7 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
               className="field mt-1.5"
               value={form.dish}
               onChange={(e) => set("dish", e.target.value)}
-              placeholder="Baked mac & cheese, pound cake, punch…"
+              placeholder="Wings, meatballs, spinach dip, cake pops…"
               maxLength={120}
               aria-invalid={!!err("dish")}
               aria-describedby={describedBy("dish")}
@@ -542,22 +551,6 @@ export function RsvpForm({ hostName, hostSms }: { hostName: string; hostSms: str
             {errorText("dish")}
           </div>
 
-          <div>
-            <label htmlFor={`${uid}-game`} className="block font-semibold text-ink">
-              Bringing a game? <span className="font-normal text-ink-soft">(optional)</span>
-            </label>
-            <input
-              id={`${uid}-game`}
-              className="field mt-1.5"
-              value={form.game}
-              onChange={(e) => set("game", e.target.value)}
-              placeholder="Uno, Spades, Taboo, Pictionary…"
-              maxLength={120}
-              aria-invalid={!!err("game")}
-              aria-describedby={describedBy("game")}
-            />
-            {errorText("game")}
-          </div>
         </div>
 
         {/* ---------- Step 3: contact + note ---------- */}

@@ -24,7 +24,6 @@ export async function notifyNewRsvp(r: RsvpRecord) {
     ["Kids", String(r.kids)],
     ["Kids' ages", r.kids_ages],
     ["Dish", [categoryLabel(r.dish_category), r.dish].filter(Boolean).join(": ") || null],
-    ["Game", r.game],
     ["Contact", r.contact],
     ["Note", r.note],
   ];

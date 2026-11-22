@@ -22,25 +22,23 @@ export function DishTiles({ initial }: { initial: PublicData }) {
           Nobody&rsquo;s claimed a dish yet. First pick gets bragging rights (and the best category).
         </p>
       ) : null}
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+      <ul className="flex flex-wrap justify-center gap-3 sm:gap-4">
         {tiles.map((t) => {
           const alternatives = t.covered ? openCategories(tiles, t.id).slice(0, 2) : [];
           return (
             <li
               key={t.id}
-              className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border-2 border-gold-deep bg-white shadow-[0_10px_24px_-14px_rgba(60,20,10,0.6)]"
+              className="flex w-[calc(50%-0.375rem)] flex-col overflow-hidden rounded-[var(--radius-card)] border-2 border-gold-deep bg-white shadow-[0_10px_24px_-14px_rgba(60,20,10,0.6)] sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
             >
-              <div className="relative aspect-[2/1] w-full bg-cream-deep">
-                <Image src={t.image} alt={t.alt} fill sizes="(min-width: 1024px) 360px, 48vw" className="object-cover" />
+              <div className="relative aspect-[3/2] w-full bg-white">
+                <Image src={t.image} alt={t.alt} fill sizes="(min-width: 1024px) 380px, 48vw" className="object-contain p-1.5" />
                 {t.covered ? (
                   <span className="absolute right-2 top-2 rotate-3 rounded-full bg-pine px-3 py-1 font-display text-sm uppercase tracking-wide text-white shadow-lg">
                     Covered!
                   </span>
                 ) : null}
               </div>
-              <div className="bg-wine px-3 py-1.5 text-center">
-                <h3 className="font-display text-xl uppercase tracking-wide text-white">{t.label}</h3>
-              </div>
+              <h3 className="sr-only">{t.label}</h3>
               <div className="flex flex-1 flex-col gap-2 p-3">
                 <p className="text-sm font-semibold text-wine">
                   {t.count === 0 ? "Be the first!" : `${t.count} claimed`}
@@ -96,10 +94,10 @@ export function DishTiles({ initial }: { initial: PublicData }) {
 
 export function DishTilesSkeleton() {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3" aria-busy="true" aria-label="Loading the dish list">
-      {Array.from({ length: 6 }, (_, i) => (
-        <li key={i} className="overflow-hidden rounded-[var(--radius-card)] border-2 border-gold-deep/50 bg-white">
-          <div className="skeleton-ink aspect-[2/1] !rounded-none" />
+    <ul className="flex flex-wrap justify-center gap-3 sm:gap-4" aria-busy="true" aria-label="Loading the dish list">
+      {Array.from({ length: 5 }, (_, i) => (
+        <li key={i} className="w-[calc(50%-0.375rem)] overflow-hidden rounded-[var(--radius-card)] border-2 border-gold-deep/50 bg-white sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]">
+          <div className="skeleton-ink aspect-[3/2] !rounded-none" />
           <div className="space-y-2 p-3">
             <div className="skeleton-ink h-5 w-2/3" />
             <div className="skeleton-ink h-4 w-full" />

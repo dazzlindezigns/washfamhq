@@ -39,10 +39,24 @@ export type ResolvedSettings = {
   address: string | null;
   mapsUrl: string | null;
   attire: string;
-  attireNote: string;
+  attireNote: string | null;
   dishRule: string;
+  giftRule: string;
   toneLine: string;
   categoryLimits: Record<DishCategoryId, number | null>;
+};
+
+export type GameLink = { url: string; label?: string | null };
+
+/** A row from the xmas_public_game_ideas view. */
+export type GameIdea = {
+  id: string;
+  title: string;
+  how_to_play: string;
+  links: GameLink[];
+  shared_by: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PublicData = {
@@ -50,5 +64,7 @@ export type PublicData = {
   error?: "not_configured" | "fetch_failed";
   settings: ResolvedSettings;
   rsvps: PublicRsvp[];
+  /** null = the game ideas couldn't be loaded (the rest of the page still works). */
+  ideas: GameIdea[] | null;
   generatedAt: number;
 };

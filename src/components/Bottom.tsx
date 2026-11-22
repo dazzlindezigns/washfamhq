@@ -50,9 +50,8 @@ export function Faq() {
       q: "What do I wear?",
       a: (
         <>
-          Christmas pajamas. They&rsquo;re <strong>required</strong>, not suggested. Plaid matching is highly encouraged: get
-          the whole household coordinated and you&rsquo;ll be the talk of the night. No PJs? Liiisten&hellip; don&rsquo;t
-          test me.
+          Christmas pajamas. They&rsquo;re <strong>required</strong>, not suggested. Get cozy, get festive, and come ready
+          to play. No PJs? Liiisten&hellip; don&rsquo;t test me.
         </>
       ),
     },
@@ -60,12 +59,18 @@ export function Faq() {
       q: "What do I bring?",
       a: (
         <>
-          Every family brings a dish. Head to{" "}
+          Two things: a <strong>finger-food dish</strong> and <strong>one small gift</strong> for the game prize table. Head
+          to{" "}
           <a href="#dishes" className="font-semibold text-wine underline underline-offset-4">
             Dish Signup
           </a>{" "}
-          and claim your category so we get a real spread (not nine desserts and no entrée). If you&rsquo;ve got a favorite
-          game, bring that too and add it to your RSVP.
+          and claim your category (Meats, Sides, Chips &amp; Dip, Desserts, or Drinks). We&rsquo;ve got the paper goods
+          covered (plates, cups, and napkins), so bring your dish in something disposable or easy to clean. Got a game
+          we should play? Put it on the{" "}
+          <a href="#games" className="font-semibold text-wine underline underline-offset-4">
+            Game Ideas
+          </a>{" "}
+          board.
         </>
       ),
     },
@@ -150,7 +155,6 @@ export function Footer() {
         <div className="mt-8 flex justify-center">
           <Brand size="footer" />
         </div>
-        <p className="mt-4 text-sm text-cream/90">The Washingtons&rsquo; Family Headquarters</p>
       </div>
     </footer>
   );

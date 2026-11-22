@@ -71,12 +71,6 @@ function FamilyCard({ r, mine, highlight }: { r: PublicRsvp; mine: boolean; high
           <dt className="inline font-semibold">Bringing: </dt>
           <dd className="inline break-words">{bringing}</dd>
         </div>
-        {r.game ? (
-          <div>
-            <dt className="inline font-semibold">Game: </dt>
-            <dd className="inline break-words">{r.game}</dd>
-          </div>
-        ) : null}
       </dl>
     </article>
   );

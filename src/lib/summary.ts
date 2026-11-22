@@ -75,12 +75,6 @@ export function openCategories(tiles: DishTile[], exclude?: DishCategoryId) {
     });
 }
 
-export function gamesBeingBrought(rsvps: PublicRsvp[]) {
-  return rsvps
-    .filter((r) => r.status !== "cant" && r.game && r.game.trim())
-    .map((r) => ({ id: r.id, family: r.family_name, game: r.game as string, status: r.status }));
-}
-
 export function categoryLabel(id: DishCategoryId | null | undefined) {
   return DISH_CATEGORIES.find((c) => c.id === id)?.label ?? null;
 }
